@@ -1,0 +1,14 @@
+# 本地 Windows 部署覆盖配置
+#
+# 原因：8787 / 8788 落在 Windows 的 TCP 排除端口范围内
+#       （8712-8811，由 Hyper-V / WSL2 的动态 NAT 机制保留），
+#       绑定时会报 WSAEACCES:10013 "ports are not available"。
+#       详见：netsh interface ipv4 show excludedportrange protocol=tcp
+#
+# 这里把宿主机侧端口映射到 18080 / 18088（容器内端口不变），
+# 以便继续使用上游镜像与 compose 配置，git pull 更新不受影响。
+services:
+  artex:
+    ports: !override
+      - "18080:8787"              # 前端 + API  → http://localhost:18080
+      - "127.0.0.1:18088:8788"     # 流量录制代理（仅本机）
